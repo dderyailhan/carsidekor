@@ -1,0 +1,11 @@
+@page
+@model CarsiDekor.Web.Pages.CategoriesModel
+
+<h1>Kategoriler</h1>
+
+<ul>
+    @foreach (var c in Model.Categories)
+    {
+        <li>@c.Name (/@c.Slug)</li>
+    }
+</ul>
