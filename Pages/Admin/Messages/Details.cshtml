@@ -1,0 +1,56 @@
+@page "{id:int}"
+@model CarsiDekor.Web.Pages.Admin.Messages.DetailsModel
+@{
+    var m = Model.Item;
+    ViewData["Title"] = "Mesaj";
+}
+
+<div class="page-bar">
+    <h1>Mesaj</h1>
+    <a class="btn btn-outline-dark" asp-page="/Admin/Messages/Index">Listeye dön</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="panel">
+            <h2>@m.FullName</h2>
+            <p class="message-body mb-0">@m.Message</p>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="panel">
+            <dl class="meta-list">
+                <div><dt>Tarih</dt><dd>@TurkeyTime.Format(m.CreatedAt)</dd></div>
+                <div><dt>Telefon</dt><dd><a href="tel:@m.Phone">@m.Phone</a></dd></div>
+                @if (!string.IsNullOrEmpty(m.Email))
+                {
+                    <div><dt>E-posta</dt><dd><a href="mailto:@m.Email">@m.Email</a></dd></div>
+                }
+            </dl>
+
+            <div class="d-flex flex-wrap gap-2">
+                @if (!string.IsNullOrEmpty(m.Phone))
+                {
+                    <a class="btn btn-ruby" href="tel:@m.Phone">Ara</a>
+                }
+                @if (Model.WhatsAppLink is not null)
+                {
+                    <a class="btn btn-outline-dark" href="@Model.WhatsAppLink" target="_blank" rel="noopener">WhatsApp ile yaz</a>
+                }
+            </div>
+
+            <hr />
+
+            <div class="d-flex flex-wrap gap-2">
+                <form method="post" asp-page-handler="Unread" asp-route-id="@m.Id">
+                    <button type="submit" class="btn btn-sm btn-outline-dark">Okunmadı olarak işaretle</button>
+                </form>
+                <form method="post" asp-page-handler="Delete" asp-route-id="@m.Id"
+                      onsubmit="return confirm('Bu mesajı silmek istediğinize emin misiniz?')">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

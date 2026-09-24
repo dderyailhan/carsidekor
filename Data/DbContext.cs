@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectImage> ProjectImages => Set<ProjectImage>();
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+    public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -18,5 +19,10 @@ public class AppDbContext : DbContext
         b.Entity<Category>().Property(c => c.Name).HasMaxLength(100);
         b.Entity<Project>().Property(p => p.Title).HasMaxLength(200);
         b.Entity<ContactMessage>().Property(m => m.FullName).HasMaxLength(100);
+
+        // Aynı kullanıcı adıyla iki yönetici olamaz
+        b.Entity<AdminUser>().HasIndex(u => u.Username).IsUnique();
+        b.Entity<AdminUser>().Property(u => u.Username).HasMaxLength(50);
+        b.Entity<AdminUser>().Property(u => u.PasswordHash).HasMaxLength(200);
     }
 }

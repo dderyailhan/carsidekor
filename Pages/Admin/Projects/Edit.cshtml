@@ -1,0 +1,108 @@
+@page "{id:int?}"
+@model CarsiDekor.Web.Pages.Admin.Projects.EditModel
+@{
+    var isNew = Context.Request.RouteValues["id"] is null;
+    ViewData["Title"] = isNew ? "Yeni proje" : "Projeyi düzenle";
+}
+
+<div class="page-bar">
+    <h1>@ViewData["Title"]</h1>
+    <a class="btn btn-outline-dark" asp-page="/Admin/Projects/Index">Listeye dön</a>
+</div>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="panel">
+                <div class="mb-3">
+                    <label asp-for="Input.Title" class="form-label">Proje adı</label>
+                    <input asp-for="Input.Title" class="form-control" />
+                    <span asp-validation-for="Input.Title" class="field-error"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.CategoryId" class="form-label">Kategori</label>
+                    <select asp-for="Input.CategoryId" asp-items="Model.CategoryOptions" class="form-select">
+                        <option value="0">Kategori seçin</option>
+                    </select>
+                    <span asp-validation-for="Input.CategoryId" class="field-error"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Description" class="form-label">Açıklama</label>
+                    <textarea asp-for="Input.Description" class="form-control" rows="5"></textarea>
+                    <span asp-validation-for="Input.Description" class="field-error"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Materials" class="form-label">Malzeme</label>
+                    <input asp-for="Input.Materials" class="form-control" placeholder="Ceviz kaplama, pleksi, LED aydınlatma" />
+                    <span asp-validation-for="Input.Materials" class="field-error"></span>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input asp-for="Input.IsPublished" class="form-check-input" />
+                    <label asp-for="Input.IsPublished" class="form-check-label">Sitede yayınla</label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="Input.IsFeatured" class="form-check-input" />
+                    <label asp-for="Input.IsFeatured" class="form-check-label">Ana sayfada öne çıkar</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="panel mb-4">
+                <h2>Kapak fotoğrafı</h2>
+
+                @if (!string.IsNullOrEmpty(Model.CurrentCover))
+                {
+                    <img class="photo-current" src="@Model.CurrentCover" alt="Mevcut kapak fotoğrafı" />
+                    <div class="form-check mb-3">
+                        <input asp-for="RemoveCover" class="form-check-input" />
+                        <label asp-for="RemoveCover" class="form-check-label">Kapak fotoğrafını kaldır</label>
+                    </div>
+                }
+
+                <label for="CoverFile" class="form-label">@(string.IsNullOrEmpty(Model.CurrentCover) ? "Fotoğraf seçin" : "Yenisiyle değiştir")</label>
+                <input type="file" id="CoverFile" name="CoverFile" class="form-control" accept="image/jpeg,image/png,image/webp" />
+                <span asp-validation-for="CoverFile" class="field-error"></span>
+                <div class="hint mt-2">JPG, PNG veya WEBP. En fazla 8 MB.</div>
+            </div>
+
+            <div class="panel">
+                <h2>Ek fotoğraflar</h2>
+
+                @if (Model.ExistingImages.Any())
+                {
+                    <div class="photo-grid mb-3">
+                        @foreach (var image in Model.ExistingImages)
+                        {
+                            <div class="photo-item">
+                                <img src="@image.ImagePath" alt="" loading="lazy" />
+                                <label>
+                                    <input type="checkbox" name="RemoveImageIds" value="@image.Id" class="form-check-input mt-0" />
+                                    Sil
+                                </label>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <label for="ExtraFiles" class="form-label">Fotoğraf ekle</label>
+                <input type="file" id="ExtraFiles" name="ExtraFiles" class="form-control" multiple accept="image/jpeg,image/png,image/webp" />
+                <span asp-validation-for="ExtraFiles" class="field-error"></span>
+                <div class="hint mt-2">Birden fazla seçebilirsiniz. Tek seferde en fazla 10 fotoğraf.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-ruby">Kaydet</button>
+        <a class="btn btn-outline-dark" asp-page="/Admin/Projects/Index">Vazgeç</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

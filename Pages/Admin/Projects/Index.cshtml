@@ -1,0 +1,88 @@
+@page
+@model CarsiDekor.Web.Pages.Admin.Projects.IndexModel
+@{
+    ViewData["Title"] = "Projeler";
+}
+
+<div class="page-bar">
+    <h1>Projeler</h1>
+    <a class="btn btn-ruby" asp-page="/Admin/Projects/Edit">Yeni proje ekle</a>
+</div>
+
+<form method="get" class="d-flex gap-2 mb-3" role="search">
+    <input type="search" name="q" value="@Model.Q" class="form-control" style="max-width:360px" placeholder="Proje adında ara" aria-label="Proje ara" />
+    <button type="submit" class="btn btn-outline-dark">Ara</button>
+    @if (!string.IsNullOrEmpty(Model.Q))
+    {
+        <a class="btn btn-link text-dark" asp-page="/Admin/Projects/Index">Aramayı temizle</a>
+    }
+</form>
+
+@if (Model.Projects.Any())
+{
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width:96px">Kapak</th>
+                    <th>Proje</th>
+                    <th>Kategori</th>
+                    <th>Durum</th>
+                    <th class="text-end">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var p in Model.Projects)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(p.CoverImagePath))
+                        {
+                            <img class="thumb" src="@p.CoverImagePath" alt="" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="thumb-empty"></div>
+                        }
+                    </td>
+                    <td>
+                        <a asp-page="/Admin/Projects/Edit" asp-route-id="@p.Id"><strong>@p.Title</strong></a>
+                        <div class="hint">@TurkeyTime.Format(p.CreatedAt)</div>
+                    </td>
+                    <td>@p.Category.Name</td>
+                    <td>
+                        @if (p.IsPublished)
+                        {
+                            <span class="tag tag-ok">Yayında</span>
+                        }
+                        else
+                        {
+                            <span class="tag tag-warn">Gizli</span>
+                        }
+                        @if (p.IsFeatured)
+                        {
+                            <span class="tag">Öne çıkan</span>
+                        }
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-dark" asp-page="/Admin/Projects/Edit" asp-route-id="@p.Id">Düzenle</a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@p.Id" asp-route-q="@Model.Q" asp-route-p="@Model.Pager.Page"
+                              class="d-inline" onsubmit="return confirm('Bu projeyi ve fotoğraflarını silmek istediğinize emin misiniz?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="Model.Pager" />
+}
+else
+{
+    <div class="panel">
+        <p class="mb-3">@(string.IsNullOrEmpty(Model.Q) ? "Henüz proje yok." : "Aramanızla eşleşen proje bulunamadı.")</p>
+        <a class="btn btn-ruby" asp-page="/Admin/Projects/Edit">İlk projeyi ekle</a>
+    </div>
+}

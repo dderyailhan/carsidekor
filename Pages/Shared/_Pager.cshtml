@@ -1,0 +1,19 @@
+@model PagerInfo
+@{
+    var pageName = ViewContext.RouteData.Values["page"]?.ToString() ?? "/Index";
+}
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="pager" aria-label="Sayfalar">
+        @if (Model.Page > 1)
+        {
+            <a class="btn btn-outline-dark btn-sm" asp-page="@pageName" asp-route-p="@(Model.Page - 1)" asp-route-q="@Model.Q">Önceki</a>
+        }
+        <span>Sayfa @Model.Page / @Model.TotalPages</span>
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a class="btn btn-outline-dark btn-sm" asp-page="@pageName" asp-route-p="@(Model.Page + 1)" asp-route-q="@Model.Q">Sonraki</a>
+        }
+    </nav>
+}

@@ -1,0 +1,44 @@
+@page
+@model CarsiDekor.Web.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Panel";
+}
+
+<div class="page-bar">
+    <h1>Panel</h1>
+    <a class="btn btn-ruby" asp-page="/Admin/Projects/Edit">Yeni proje ekle</a>
+</div>
+
+<div class="stats">
+    <div class="stat"><strong>@Model.ProjectCount</strong><span>Toplam proje</span></div>
+    <div class="stat"><strong>@Model.PublishedCount</strong><span>Sitede yayında</span></div>
+    <div class="stat"><strong>@Model.UnreadCount</strong><span>Okunmamış mesaj</span></div>
+</div>
+
+<div class="panel">
+    <h2>Son mesajlar</h2>
+
+    @if (Model.LatestMessages.Any())
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <tbody>
+                @foreach (var m in Model.LatestMessages)
+                {
+                    <tr class="@(m.IsRead ? "" : "row-unread")">
+                        <td style="width:1%"><span class="dot @(m.IsRead ? "dot-off" : "")"></span></td>
+                        <td><a asp-page="/Admin/Messages/Details" asp-route-id="@m.Id">@m.FullName</a></td>
+                        <td>@m.Phone</td>
+                        <td class="text-end">@TurkeyTime.Format(m.CreatedAt)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <a class="btn btn-outline-dark btn-sm mt-3" asp-page="/Admin/Messages/Index">Tüm mesajlar</a>
+    }
+    else
+    {
+        <p class="mb-0">Henüz mesaj gelmedi.</p>
+    }
+</div>

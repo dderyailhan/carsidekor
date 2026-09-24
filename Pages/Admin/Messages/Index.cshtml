@@ -1,0 +1,48 @@
+@page
+@model CarsiDekor.Web.Pages.Admin.Messages.IndexModel
+@{
+    ViewData["Title"] = "Mesajlar";
+
+    string Preview(string text) => text.Length > 90 ? text[..90] + "..." : text;
+}
+
+<div class="page-bar">
+    <h1>Mesajlar</h1>
+</div>
+
+@if (Model.Messages.Any())
+{
+    <div class="table-wrap">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width:1%"></th>
+                    <th>Gönderen</th>
+                    <th>Telefon</th>
+                    <th>Mesaj</th>
+                    <th class="text-end">Tarih</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var m in Model.Messages)
+            {
+                <tr class="@(m.IsRead ? "" : "row-unread")">
+                    <td><span class="dot @(m.IsRead ? "dot-off" : "")" title="@(m.IsRead ? "Okundu" : "Okunmadı")"></span></td>
+                    <td><a asp-page="/Admin/Messages/Details" asp-route-id="@m.Id">@m.FullName</a></td>
+                    <td class="text-nowrap">@m.Phone</td>
+                    <td>@Preview(m.Message)</td>
+                    <td class="text-end text-nowrap">@TurkeyTime.Format(m.CreatedAt)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="Model.Pager" />
+}
+else
+{
+    <div class="panel">
+        <p class="mb-0">Henüz mesaj gelmedi. Sitedeki iletişim formundan gelen mesajlar burada görünecek.</p>
+    </div>
+}

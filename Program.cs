@@ -1,5 +1,7 @@
 using CarsiDekor.Web.Data;
 using CarsiDekor.Web.Models;
+using CarsiDekor.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,12 +9,36 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddScoped<ImageStorage>();
+
+// Giriş sistemi: başarılı girişte tarayıcıya şifreli bir çerez verilir
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Admin/Login";
+        options.AccessDeniedPath = "/Admin/Login";
+        options.Cookie.Name = "CarsiDekor.Admin";
+        options.Cookie.HttpOnly = true;                       // JavaScript çereze erişemez
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+            ? CookieSecurePolicy.SameAsRequest                // geliştirirken http'de de çalışsın
+            : CookieSecurePolicy.Always;                      // yayında sadece https
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+    });
+builder.Services.AddAuthorization();
+
+builder.Services.AddRazorPages(options =>
+{
+    // /Admin altındaki tüm sayfalar giriş ister, sadece giriş sayfası herkese açık
+    options.Conventions.AuthorizeFolder("/Admin");
+    options.Conventions.AllowAnonymousToPage("/Admin/Login");
+});
 
 var app = builder.Build();
 
-// Örnek kategorileri ekle (tablo boşsa)
+// Başlangıç verileri
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -29,7 +55,7 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 
-        if (!db.Projects.Any())
+    if (!db.Projects.Any())
     {
         var cats = db.Categories.ToDictionary(c => c.Slug);
 
@@ -71,6 +97,28 @@ using (var scope = app.Services.CreateScope())
         );
         db.SaveChanges();
     }
+
+    // İlk yönetici hesabı. Bilgiler kodda değil, user-secrets'ta durur.
+    if (!db.AdminUsers.Any())
+    {
+        var username = app.Configuration["Admin:Username"];
+        var password = app.Configuration["Admin:Password"];
+
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            app.Logger.LogWarning(
+                "Yönetici hesabı yok. Oluşturmak için Admin:Username ve Admin:Password ayarlarını girin.");
+        }
+        else
+        {
+            db.AdminUsers.Add(new AdminUser
+            {
+                Username = username.Trim(),
+                PasswordHash = PasswordService.Hash(password)
+            });
+            db.SaveChanges();
+        }
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -82,9 +130,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Yönetim panelinden sonradan yüklenen fotoğrafları sunmak için gerekli
+app.UseStaticFiles();
+
 app.UseRouting();
 
-app.UseAuthorization();
+app.UseAuthentication();   // "bu kişi kim?"
+app.UseAuthorization();    // "bu sayfaya girmeye yetkisi var mı?"
 
 app.MapStaticAssets();
 app.MapRazorPages()

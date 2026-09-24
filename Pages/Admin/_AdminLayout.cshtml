@@ -1,0 +1,68 @@
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Db
+@{
+    var isAuth = User.Identity?.IsAuthenticated == true;
+    var unread = isAuth ? await Db.ContactMessages.CountAsync(m => !m.IsRead) : 0;
+
+    var page = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+    string Active(string prefix) => page.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>@(ViewData["Title"] ?? "Yönetim") | Çarşı Dekor Yönetim</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Marcellus&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body class="admin @(isAuth ? "" : "admin-login")">
+
+@if (isAuth)
+{
+    <header class="admin-bar">
+        <div class="container-xl admin-bar-inner">
+            <a class="admin-brand" asp-page="/Admin/Index">Çarşı Dekor <span>Yönetim</span></a>
+
+            <nav class="admin-nav" aria-label="Yönetim menüsü">
+                <a class="@Active("/Admin/Index")" asp-page="/Admin/Index">Panel</a>
+                <a class="@Active("/Admin/Projects")" asp-page="/Admin/Projects/Index">Projeler</a>
+                <a class="@Active("/Admin/Messages")" asp-page="/Admin/Messages/Index">
+                    Mesajlar
+                    @if (unread > 0)
+                    {
+                        <span class="badge-count">@unread</span>
+                    }
+                </a>
+                <a class="@Active("/Admin/Password")" asp-page="/Admin/Password">Şifre</a>
+            </nav>
+
+            <div class="admin-tools">
+                <a href="/" target="_blank" rel="noopener">Siteyi gör</a>
+                <form method="post" asp-page="/Admin/Logout">
+                    <button type="submit" class="btn btn-sm btn-outline-light">Çıkış</button>
+                </form>
+            </div>
+        </div>
+    </header>
+}
+
+<main class="@(isAuth ? "container-xl admin-main" : "")">
+    @if (TempData["Flash"] is string flash)
+    {
+        <div class="alert alert-success" role="status">@flash</div>
+    }
+
+    @RenderBody()
+</main>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

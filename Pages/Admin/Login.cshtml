@@ -1,0 +1,36 @@
+@page
+@model CarsiDekor.Web.Pages.Admin.LoginModel
+@{
+    ViewData["Title"] = "Giriş";
+}
+
+<div class="login-card">
+    <img src="~/images/logo.png" alt="Çarşı Dekor" />
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="login-error" role="alert">@Model.ErrorMessage</div>
+    }
+
+    <form method="post" asp-route-returnUrl="@Request.Query["returnUrl"].ToString()">
+        <div class="mb-3">
+            <label asp-for="Input.Username" class="form-label">Kullanıcı adı</label>
+            <input asp-for="Input.Username" class="form-control" autocomplete="username" autofocus />
+            <span asp-validation-for="Input.Username" class="field-error"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.Password" class="form-label">Şifre</label>
+            <input asp-for="Input.Password" class="form-control" autocomplete="current-password" />
+            <span asp-validation-for="Input.Password" class="field-error"></span>
+        </div>
+        <div class="form-check mb-4">
+            <input asp-for="Input.RememberMe" class="form-check-input" />
+            <label asp-for="Input.RememberMe" class="form-check-label">Beni hatırla</label>
+        </div>
+        <button type="submit" class="btn btn-ruby">Giriş yap</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
