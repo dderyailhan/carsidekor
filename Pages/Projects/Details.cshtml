@@ -1,0 +1,103 @@
+@page "{id:int}"
+@model CarsiDekor.Web.Pages.Projects.DetailsModel
+@{
+    var p = Model.Item;
+    ViewData["Title"] = p.Title;
+    ViewData["Description"] = string.IsNullOrWhiteSpace(p.Description)
+        ? $"{p.Title}: Çarşı Dekor projesi."
+        : p.Description;
+
+    // Galeri: kapak görseli + projeye eklenen diğer fotoğraflar
+    var images = new List<string>();
+    if (!string.IsNullOrEmpty(p.CoverImagePath)) images.Add(p.CoverImagePath);
+    images.AddRange(p.Images.OrderBy(i => i.DisplayOrder).Select(i => i.ImagePath));
+
+    var waText = Uri.EscapeDataString($"Merhaba, \"{p.Title}\" projesi hakkında bilgi almak istiyorum.");
+}
+
+<section class="page-hero page-hero-slim">
+    <div class="container">
+        <nav aria-label="Konum" class="crumbs">
+            <a asp-page="/Projects/Index">Projelerimiz</a>
+            <span>/</span>
+            <a asp-page="/Projects/Index" asp-route-kategori="@p.Category.Slug">@p.Category.Name</a>
+        </nav>
+    </div>
+</section>
+
+<section class="section section-tight">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-7">
+                @if (images.Any())
+                {
+                    <div class="gallery-main">
+                        <img id="mainImage" src="@images[0]" alt="@p.Title" />
+                    </div>
+
+                    @if (images.Count > 1)
+                    {
+                        <div class="gallery-thumbs">
+                            @for (var i = 0; i < images.Count; i++)
+                            {
+                                <img class="gallery-thumb @(i == 0 ? "active" : "")" src="@images[i]" data-src="@images[i]"
+                                     data-gallery-thumb alt="@p.Title fotoğraf @(i + 1)" loading="lazy" />
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="gallery-main gallery-empty">Bu proje için henüz fotoğraf eklenmedi.</div>
+                }
+            </div>
+
+            <div class="col-lg-5">
+                <h1 class="detail-title">@p.Title</h1>
+
+                @if (!string.IsNullOrWhiteSpace(p.Description))
+                {
+                    <p class="detail-text">@p.Description</p>
+                }
+
+                <dl class="detail-list">
+                    <div>
+                        <dt>Kategori</dt>
+                        <dd>@p.Category.Name</dd>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(p.Materials))
+                    {
+                        <div>
+                            <dt>Malzeme</dt>
+                            <dd>@p.Materials</dd>
+                        </div>
+                    }
+                </dl>
+
+                <div class="detail-actions">
+                    <a class="btn-ruby" href="https://wa.me/@(SiteInfo.WhatsApp)?text=@waText" target="_blank" rel="noopener">Bu iş için teklif isteyin</a>
+                    <a class="btn-ink" asp-page="/Contact">İletişim formu</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.Related.Any())
+{
+    <section class="section section-dark">
+        <div class="container">
+            <div class="section-head">
+                <div>
+                    <h2>Aynı kategoriden diğer işler</h2>
+                </div>
+            </div>
+            <div class="project-grid">
+                @foreach (var r in Model.Related)
+                {
+                    <partial name="_ProjectCard" model="r" />
+                }
+            </div>
+        </div>
+    </section>
+}

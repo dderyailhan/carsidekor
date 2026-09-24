@@ -1,0 +1,96 @@
+@page
+@model CarsiDekor.Web.Pages.ContactModel
+@{
+    ViewData["Title"] = "İletişim";
+    ViewData["Description"] = "Çarşı Dekor ile iletişime geçin: telefon, WhatsApp, adres ve mesaj formu.";
+    var waText = Uri.EscapeDataString("Merhaba, vitrin işleriniz hakkında bilgi almak istiyorum.");
+}
+
+<section class="page-hero">
+    <div class="container">
+        <h1>İletişim</h1>
+        <p>Vitrin ölçünüzü ve ne istediğinizi yazın, size dönüş yapalım.</p>
+    </div>
+</section>
+
+<section class="section section-tight">
+    <div class="container">
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="flash" role="status">@Model.SuccessMessage</div>
+        }
+
+        <div class="row g-5">
+            <div class="col-lg-5">
+                <dl class="contact-list">
+                    <div>
+                        <dt>Telefon</dt>
+                        <dd><a href="tel:@SiteInfo.PhoneLink">@SiteInfo.Phone</a></dd>
+                    </div>
+                    <div>
+                        <dt>WhatsApp</dt>
+                        <dd><a href="https://wa.me/@(SiteInfo.WhatsApp)?text=@waText" target="_blank" rel="noopener">Mesaj yazın</a></dd>
+                    </div>
+                    <div>
+                        <dt>E-posta</dt>
+                        <dd><a href="mailto:@SiteInfo.Email">@SiteInfo.Email</a></dd>
+                    </div>
+                    <div>
+                        <dt>Adres</dt>
+                        <dd>@SiteInfo.Address</dd>
+                    </div>
+                    <div>
+                        <dt>Çalışma saatleri</dt>
+                        <dd>@SiteInfo.WorkingHours</dd>
+                    </div>
+                </dl>
+
+                <div class="map-frame">
+                    <iframe title="Çarşı Dekor konumu" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                            src="https://www.google.com/maps?q=@(Uri.EscapeDataString(SiteInfo.MapQuery))&amp;output=embed"></iframe>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <form method="post" class="contact-form" novalidate>
+                    <div class="mb-3">
+                        <label asp-for="Input.FullName" class="form-label">Ad soyad</label>
+                        <input asp-for="Input.FullName" class="form-control" autocomplete="name" />
+                        <span asp-validation-for="Input.FullName" class="field-error"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.Phone" class="form-label">Telefon</label>
+                            <input asp-for="Input.Phone" class="form-control" autocomplete="tel" />
+                            <span asp-validation-for="Input.Phone" class="field-error"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.Email" class="form-label">E-posta (isteğe bağlı)</label>
+                            <input asp-for="Input.Email" class="form-control" autocomplete="email" />
+                            <span asp-validation-for="Input.Email" class="field-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Message" class="form-label">Mesajınız</label>
+                        <textarea asp-for="Input.Message" class="form-control" rows="6"
+                                  placeholder="Vitrin ölçüsü, ürün türü, istediğiniz malzeme..."></textarea>
+                        <span asp-validation-for="Input.Message" class="field-error"></span>
+                    </div>
+
+                    <!-- Bot tuzağı: insanlar görmez, boş kalmalı -->
+                    <div class="hp-field" aria-hidden="true">
+                        <label>Web sitesi <input type="text" asp-for="Website" tabindex="-1" autocomplete="off" /></label>
+                    </div>
+
+                    <button type="submit" class="btn-ruby">Mesajı gönder</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,25 @@
+@model Project
+
+<a class="project-card" asp-page="/Projects/Details" asp-route-id="@Model.Id">
+    @if (!string.IsNullOrEmpty(Model.CoverImagePath))
+    {
+        <img src="@Model.CoverImagePath" alt="@Model.Title" loading="lazy" />
+    }
+    else
+    {
+        <div class="project-card-empty"></div>
+    }
+
+    @if (Model.Category != null)
+    {
+        <span class="project-tag">@Model.Category.Name</span>
+    }
+
+    <div class="project-card-caption">
+        <h3>@Model.Title</h3>
+        @if (!string.IsNullOrEmpty(Model.Materials))
+        {
+            <span>@Model.Materials</span>
+        }
+    </div>
+</a>

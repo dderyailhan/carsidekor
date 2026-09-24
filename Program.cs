@@ -28,6 +28,49 @@ using (var scope = app.Services.CreateScope())
         );
         db.SaveChanges();
     }
+
+        if (!db.Projects.Any())
+    {
+        var cats = db.Categories.ToDictionary(c => c.Slug);
+
+        db.Projects.AddRange(
+            new Project
+            {
+                Title = "Altın Yüzüklük Vitrini",
+                Description = "Ceviz kaplama gövde üzerine ışıklı yüzüklük dizaynı.",
+                Materials = "Ceviz kaplama, pleksi, LED aydınlatma",
+                CoverImagePath = "https://placehold.co/800x600?text=Yuzukluk",
+                IsFeatured = true,
+                CategoryId = cats["yuzukluk"].Id
+            },
+            new Project
+            {
+                Title = "Kolye Büstü Seti",
+                Description = "Kadife kaplı, üç boy kolye büstü seti.",
+                Materials = "MDF, kadife kaplama",
+                CoverImagePath = "https://placehold.co/800x600?text=Kolye+Busu",
+                CategoryId = cats["kolye-busu"].Id
+            },
+            new Project
+            {
+                Title = "Vitrin Mankeni",
+                Description = "Takı sergilemeye uygun ölçüde küçük manken.",
+                Materials = "Fiber, deri kaplama",
+                CoverImagePath = "https://placehold.co/800x600?text=Manken",
+                CategoryId = cats["manken"].Id
+            },
+            new Project
+            {
+                Title = "Komple Mağaza Vitrini",
+                Description = "Ölçüye göre hazırlanmış duvar ve cam vitrin sistemi.",
+                Materials = "Lake boya, cam, LED",
+                CoverImagePath = "https://placehold.co/800x600?text=Komple+Vitrin",
+                IsFeatured = true,
+                CategoryId = cats["komple-vitrin"].Id
+            }
+        );
+        db.SaveChanges();
+    }
 }
 
 // Configure the HTTP request pipeline.

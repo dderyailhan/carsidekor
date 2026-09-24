@@ -1,0 +1,45 @@
+@page
+@model CarsiDekor.Web.Pages.Projects.IndexModel
+@{
+    ViewData["Title"] = "Projelerimiz";
+    ViewData["Description"] = "Çarşı Dekor'un yüzüklük, kolye büstü, manken, tablo ve komple vitrin projeleri.";
+}
+
+<section class="page-hero">
+    <div class="container">
+        <h1>Projelerimiz</h1>
+        <p>Kuyumcular için hazırladığımız vitrin ve sergileme işleri.</p>
+    </div>
+</section>
+
+<section class="section section-tight">
+    <div class="container">
+        <div class="filter-bar">
+            <a class="filter-pill @(Model.Secili == null ? "active" : "")"
+               asp-page="/Projects/Index">Tümü</a>
+
+            @foreach (var c in Model.Categories)
+            {
+                <a class="filter-pill @(Model.Secili == c.Slug ? "active" : "")"
+                   asp-page="/Projects/Index" asp-route-kategori="@c.Slug">@c.Name</a>
+            }
+        </div>
+
+        @if (Model.Projects.Any())
+        {
+            <div class="project-grid">
+                @foreach (var p in Model.Projects)
+                {
+                    <partial name="_ProjectCard" model="p" />
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>Bu kategoride henüz proje yok.</p>
+                <a class="btn-ink" asp-page="/Projects/Index">Tüm projeleri gör</a>
+            </div>
+        }
+    </div>
+</section>

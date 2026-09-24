@@ -1,0 +1,43 @@
+@page
+@{
+    ViewData["Title"] = "Hakkımızda";
+    ViewData["Description"] = "Çarşı Dekor, kuyumcular için ölçüye özel vitrin tasarlayan ve marangozluk işçiliğiyle üreten bir atölyedir.";
+}
+
+<section class="page-hero">
+    <div class="container">
+        <h1>Hakkımızda</h1>
+        <p>Kuyumcular için vitrin tasarlıyor, atölyemizde üretiyoruz.</p>
+    </div>
+</section>
+
+<section class="section section-tight">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-7">
+                <div class="prose">
+                    <p>
+                        Çarşı Dekor, kuyumcuların ürünlerini en iyi şekilde sergilemesi için vitrin tasarlayan ve üreten bir atölye.
+                        Yüzüklük, kolye büstü, manken, tablo ve komple vitrin işlerini marangozluk işçiliğiyle, dükkânınızın ölçüsüne göre yapıyoruz.
+                    </p>
+                    <p>
+                        Her vitrin farklı: ürün grubu, mağaza büyüklüğü ve ışık düzeni işin nasıl olacağını belirliyor.
+                        Bu yüzden hazır bir katalogdan seçtirmek yerine, ihtiyacınızı dinleyip size özel çözüm hazırlıyoruz.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <h2 class="side-title">Yaptığımız işler</h2>
+                <ul class="work-list">
+                    <li><a asp-page="/Projects/Index" asp-route-kategori="yuzukluk">Yüzüklükler</a></li>
+                    <li><a asp-page="/Projects/Index" asp-route-kategori="kolye-busu">Kolye büstleri</a></li>
+                    <li><a asp-page="/Projects/Index" asp-route-kategori="manken">Mankenler</a></li>
+                    <li><a asp-page="/Projects/Index" asp-route-kategori="tablo">Tablolar</a></li>
+                    <li><a asp-page="/Projects/Index" asp-route-kategori="komple-vitrin">Komple vitrinler</a></li>
+                </ul>
+                <a class="btn-ruby mt-4" asp-page="/Contact">Bizimle iletişime geçin</a>
+            </div>
+        </div>
+    </div>
+</section>

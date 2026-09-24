@@ -1,10 +1,143 @@
-﻿@page
-@model IndexModel
+@page
+@model CarsiDekor.Web.Pages.IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Kuyumcular için vitrin tasarımı";
+    var waText = Uri.EscapeDataString("Merhaba, vitrin işleriniz hakkında bilgi almak istiyorum.");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero" aria-label="Öne çıkan işler">
+    <h1 class="visually-hidden">Çarşı Dekor: kuyumcular için vitrin tasarımı ve üretimi</h1>
+    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5500" data-bs-pause="false">
+        <div class="carousel-indicators">
+            @for (var i = 0; i < Model.Slides.Count; i++)
+            {
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i"
+                        class="@(i == 0 ? "active" : "")" aria-label="Slayt @(i + 1)"></button>
+            }
+        </div>
+
+        <div class="carousel-inner">
+            @for (var i = 0; i < Model.Slides.Count; i++)
+            {
+                var s = Model.Slides[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <img src="@s.Image" alt="@s.Title" />
+                    <div class="hero-shade"></div>
+                    <div class="hero-caption">
+                        <div class="container">
+                            <h2>@s.Title</h2>
+                            <p>@s.Subtitle</p>
+                            <a class="btn-ruby" href="@s.LinkUrl">@s.LinkText</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Önceki</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Sonraki</span>
+        </button>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <h2>Vitrinin her köşesi için</h2>
+                <p>Yüzükten kolyeye, küçük standdan komple mağaza vitrinine kadar ihtiyacınız olan işi seçin.</p>
+            </div>
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+            @foreach (var c in Model.Categories)
+            {
+                <div class="col">
+                    <a class="cat-tile" asp-page="/Projects/Index" asp-route-kategori="@c.Slug">
+                        @if (!string.IsNullOrEmpty(c.Cover))
+                        {
+                            <img src="@c.Cover" alt="" loading="lazy" />
+                        }
+                        <div class="cat-tile-body">
+                            <h3>@c.Name</h3>
+                            <span>@c.ProjectCount proje</span>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="section section-dark">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <h2>Öne çıkan işler</h2>
+                <p>Atölyemizden çıkan son çalışmalardan bir seçki.</p>
+            </div>
+            <a class="text-link" asp-page="/Projects/Index">Tüm projeleri gör</a>
+        </div>
+
+        @if (Model.Featured.Any())
+        {
+            <div class="featured-grid">
+                @foreach (var p in Model.Featured)
+                {
+                    <partial name="_ProjectCard" model="p" />
+                }
+            </div>
+        }
+        else
+        {
+            <p>Henüz proje eklenmedi.</p>
+        }
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <h2>Nasıl çalışıyoruz</h2>
+                <p>İhtiyacınızdan teslimata üç adımda ilerliyoruz.</p>
+            </div>
+        </div>
+
+        <div class="steps">
+            <div class="step">
+                <span class="step-no">1</span>
+                <h3>Ölçü ve ihtiyaç</h3>
+                <p>Vitrininizin ölçüsünü, sergileyeceğiniz ürünleri ve bütçenizi birlikte konuşuruz.</p>
+            </div>
+            <div class="step">
+                <span class="step-no">2</span>
+                <h3>Tasarım</h3>
+                <p>Malzeme, renk ve aydınlatma seçenekleriyle size özel bir vitrin tasarımı hazırlarız.</p>
+            </div>
+            <div class="step">
+                <span class="step-no">3</span>
+                <h3>Üretim ve teslim</h3>
+                <p>Atölyemizde marangozluk işçiliğiyle üretir, hazır hale getirip teslim ederiz.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-band">
+    <div class="container">
+        <div>
+            <h2>Vitrininizi yenilemek mi istiyorsunuz?</h2>
+            <p>Ölçünüzü ve ne istediğinizi yazın, size dönüş yapalım.</p>
+        </div>
+        <div class="cta-actions">
+            <a class="btn-white" href="https://wa.me/@(SiteInfo.WhatsApp)?text=@waText" target="_blank" rel="noopener">WhatsApp ile yazın</a>
+            <a class="btn-line" asp-page="/Contact">İletişim formu</a>
+        </div>
+    </div>
+</section>

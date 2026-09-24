@@ -1,4 +1,13 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+// Proje detayında küçük fotoğrafa tıklanınca büyük fotoğrafı değiştirir.
+document.addEventListener('click', function (e) {
+    var thumb = e.target.closest('[data-gallery-thumb]');
+    if (!thumb) return;
 
-// Write your JavaScript code.
+    var main = document.getElementById('mainImage');
+    if (main) main.src = thumb.dataset.src;
+
+    document.querySelectorAll('[data-gallery-thumb]').forEach(function (t) {
+        t.classList.remove('active');
+    });
+    thumb.classList.add('active');
+});
