@@ -4,7 +4,7 @@
     var wrapClass = level == 0 ? "cat-item cat-top" : "cat-item cat-sub";
 }
 
-<div class="@wrapClass">
+<div class="@wrapClass" data-slug="@Model.Slug">
     <button type="button" class="cat-item-head" data-toggle>
         <span class="cat-item-name">@Model.Name</span>
         <span class="cat-item-count">

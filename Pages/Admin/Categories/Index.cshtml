@@ -15,6 +15,7 @@
         <table class="table">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Kategori</th>
                     <th>Slug</th>
                     <th class="text-end">İşlemler</th>
@@ -24,6 +25,16 @@
             @foreach (var row in Model.Rows)
             {
                 <tr>
+                    <td style="width:64px">
+                        @if (!string.IsNullOrEmpty(row.Category.CoverImagePath))
+                        {
+                            <img src="@row.Category.CoverImagePath" alt="" style="width:54px;height:40px;object-fit:cover;border-radius:4px" />
+                        }
+                        else
+                        {
+                            <span class="hint">—</span>
+                        }
+                    </td>
                     <td>@string.Concat(Enumerable.Repeat("— ", row.Depth))@row.Category.Name</td>
                     <td>@row.Category.Slug</td>
                     <td class="text-end text-nowrap">

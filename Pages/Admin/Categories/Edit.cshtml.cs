@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using CarsiDekor.Web.Data;
 using CarsiDekor.Web.Models;
+using CarsiDekor.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,8 +11,17 @@ namespace CarsiDekor.Web.Pages.Admin.Categories;
 
 public class EditModel : PageModel
 {
+    private const int MaxExtraFiles = 15;
+    private const string ImageFolder = "categories";
+
     private readonly AppDbContext _db;
-    public EditModel(AppDbContext db) => _db = db;
+    private readonly ImageStorage _images;
+
+    public EditModel(AppDbContext db, ImageStorage images)
+    {
+        _db = db;
+        _images = images;
+    }
 
     public class InputModel
     {
@@ -28,7 +38,16 @@ public class EditModel : PageModel
     }
 
     [BindProperty] public InputModel Input { get; set; } = new();
+    [BindProperty] public IFormFile? CoverFile { get; set; }
+    [BindProperty] public List<IFormFile> ExtraFiles { get; set; } = new();
+    [BindProperty] public bool RemoveCover { get; set; }
+    [BindProperty] public List<int> RemoveImageIds { get; set; } = new();
+
     public List<SelectListItem> ParentOptions { get; private set; } = new();
+
+    public int? CategoryId { get; private set; }
+    public string? CurrentCover { get; private set; }
+    public List<CategoryImage> ExistingImages { get; private set; } = new();
 
     public async Task<IActionResult> OnGetAsync(int? id)
     {
@@ -36,7 +55,11 @@ public class EditModel : PageModel
 
         if (id is null) return Page();
 
-        var category = await _db.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+        var category = await _db.Categories
+            .AsNoTracking()
+            .Include(c => c.Images)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
         if (category is null) return NotFound();
 
         Input = new InputModel
@@ -46,6 +69,8 @@ public class EditModel : PageModel
             DisplayOrder = category.DisplayOrder,
             ParentCategoryId = category.ParentCategoryId
         };
+        ShowExisting(category);
+
         return Page();
     }
 
@@ -56,7 +81,7 @@ public class EditModel : PageModel
         Category? category = null;
         if (id is not null)
         {
-            category = await _db.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            category = await _db.Categories.Include(c => c.Images).FirstOrDefaultAsync(c => c.Id == id);
             if (category is null) return NotFound();
         }
 
@@ -75,8 +100,32 @@ public class EditModel : PageModel
             }
         }
 
-        if (!ModelState.IsValid) return Page();
+        // --- Fotoğraf doğrulama ---
+        var extraFiles = ExtraFiles.Where(f => f.Length > 0).ToList();
+        if (extraFiles.Count > MaxExtraFiles)
+        {
+            ModelState.AddModelError(nameof(ExtraFiles), $"Tek seferde en fazla {MaxExtraFiles} fotoğraf yükleyebilirsiniz.");
+        }
 
+        if (CoverFile is { Length: > 0 })
+        {
+            var error = await _images.ValidateAsync(CoverFile);
+            if (error is not null) ModelState.AddModelError(nameof(CoverFile), error);
+        }
+
+        foreach (var file in extraFiles)
+        {
+            var error = await _images.ValidateAsync(file);
+            if (error is not null) ModelState.AddModelError(nameof(ExtraFiles), error);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            ShowExisting(category);
+            return Page();
+        }
+
+        // --- Kaydetme ---
         if (category is null)
         {
             category = new Category();
@@ -88,10 +137,56 @@ public class EditModel : PageModel
         category.DisplayOrder = Input.DisplayOrder;
         category.ParentCategoryId = Input.ParentCategoryId;
 
+        // Diskten silinecek eski dosyalar, veritabanı kaydı başarılı olunca silinir
+        var filesToDelete = new List<string?>();
+
+        if (CoverFile is { Length: > 0 })
+        {
+            filesToDelete.Add(category.CoverImagePath);
+            category.CoverImagePath = await _images.SaveAsync(CoverFile, ImageFolder);
+        }
+        else if (RemoveCover)
+        {
+            filesToDelete.Add(category.CoverImagePath);
+            category.CoverImagePath = null;
+        }
+
+        // Sadece bu kategoriye ait fotoğraflar silinebilir
+        var toRemove = category.Images.Where(i => RemoveImageIds.Contains(i.Id)).ToList();
+        foreach (var image in toRemove)
+        {
+            filesToDelete.Add(image.ImagePath);
+        }
+        _db.CategoryImages.RemoveRange(toRemove);
+
+        var nextOrder = category.Images.Except(toRemove).Select(i => i.DisplayOrder).DefaultIfEmpty(0).Max() + 1;
+        foreach (var file in extraFiles)
+        {
+            category.Images.Add(new CategoryImage
+            {
+                ImagePath = await _images.SaveAsync(file, ImageFolder),
+                DisplayOrder = nextOrder++
+            });
+        }
+
         await _db.SaveChangesAsync();
+
+        foreach (var path in filesToDelete)
+        {
+            _images.Delete(path);
+        }
 
         TempData["Flash"] = $"\"{category.Name}\" kaydedildi.";
         return RedirectToPage("/Admin/Categories/Index");
+    }
+
+    private void ShowExisting(Category? category)
+    {
+        if (category is null) return;
+
+        CategoryId = category.Id;
+        CurrentCover = category.CoverImagePath;
+        ExistingImages = category.Images.OrderBy(i => i.DisplayOrder).ToList();
     }
 
     private async Task<HashSet<int>> GetDescendantIdsAsync(int rootId)

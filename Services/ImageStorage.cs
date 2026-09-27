@@ -1,20 +1,22 @@
 namespace CarsiDekor.Web.Services;
 
 /// <summary>
-/// Yüklenen proje fotoğraflarını doğrular, wwwroot/uploads/projects klasörüne kaydeder ve siler.
+/// Yüklenen fotoğrafları doğrular, wwwroot/uploads/{folder} klasörüne kaydeder ve siler.
+/// "folder" belirtilmezse projeler için kullanılan "projects" klasörü varsayılır;
+/// kategori fotoğrafları "categories" klasörüne kaydedilir.
 /// </summary>
 public class ImageStorage
 {
     private const long MaxBytes = 8 * 1024 * 1024;   // 8 MB
-    private const string UrlFolder = "/uploads/projects/";
+    private const string DefaultFolder = "projects";
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
 
-    private readonly string _folder;
+    private readonly string _webRoot;
     private readonly ILogger<ImageStorage> _logger;
 
     public ImageStorage(IWebHostEnvironment env, ILogger<ImageStorage> logger)
     {
-        _folder = Path.Combine(env.WebRootPath, "uploads", "projects");
+        _webRoot = env.WebRootPath;
         _logger = logger;
     }
 
@@ -50,28 +52,29 @@ public class ImageStorage
     }
 
     /// <summary>Fotoğrafı rastgele bir adla kaydeder, sitede kullanılacak adresi döner.</summary>
-    public async Task<string> SaveAsync(IFormFile file)
+    public async Task<string> SaveAsync(IFormFile file, string folder = DefaultFolder)
     {
-        Directory.CreateDirectory(_folder);
+        var dir = Path.Combine(_webRoot, "uploads", folder);
+        Directory.CreateDirectory(dir);
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         var name = $"{Guid.NewGuid():N}{ext}";
 
-        await using var target = File.Create(Path.Combine(_folder, name));
+        await using var target = File.Create(Path.Combine(dir, name));
         await file.CopyToAsync(target);
 
-        return UrlFolder + name;
+        return $"/uploads/{folder}/{name}";
     }
 
     /// <summary>Sadece bizim yüklediğimiz dosyaları siler. Dış adresler (örnek görseller) yok sayılır.</summary>
     public void Delete(string? path)
     {
-        if (string.IsNullOrEmpty(path) || !path.StartsWith(UrlFolder, StringComparison.Ordinal))
+        if (string.IsNullOrEmpty(path) || !path.StartsWith("/uploads/", StringComparison.Ordinal))
         {
             return;
         }
 
-        var fullPath = Path.Combine(_folder, Path.GetFileName(path));
+        var fullPath = Path.Combine(_webRoot, path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
         try
         {
             if (File.Exists(fullPath))

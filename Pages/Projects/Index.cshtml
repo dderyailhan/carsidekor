@@ -1,13 +1,13 @@
 @page
 @model CarsiDekor.Web.Pages.Projects.IndexModel
 @{
-    ViewData["Title"] = "Projelerimiz";
-    ViewData["Description"] = "Çarşı Dekor'un vitrin, banko, niş, manken ve diğer sergileme projeleri.";
+    ViewData["Title"] = "Kategoriler";
+    ViewData["Description"] = "Çarşı Dekor'un vitrin, banko, niş, manken ve diğer sergileme kategorileri.";
 }
 
 <section class="page-hero">
     <div class="container">
-        <h1>Projelerimiz</h1>
+        <h1>Kategoriler</h1>
         <p>Kuyumcular için hazırladığımız vitrin ve sergileme işleri.</p>
     </div>
 </section>
@@ -51,6 +51,20 @@ document.querySelectorAll('.cat-tree').forEach(function (tree) {
         }
     });
 });
+
+// Anasayfadaki kategori kartından "/Projects?kategori=vitrinler" ile gelindiyse
+// o kategoriyi otomatik açıp görünür alana kaydırır.
+(function () {
+    var params = new URLSearchParams(window.location.search);
+    var slug = params.get('kategori');
+    if (!slug) return;
+
+    var target = document.querySelector('.cat-item.cat-top[data-slug="' + CSS.escape(slug) + '"]');
+    if (!target) return;
+
+    target.classList.add('open');
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+})();
 </script>
 }
 

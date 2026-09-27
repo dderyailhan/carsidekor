@@ -1,5 +1,6 @@
 using CarsiDekor.Web.Data;
 using CarsiDekor.Web.Models;
+using CarsiDekor.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,13 @@ namespace CarsiDekor.Web.Pages.Admin.Categories;
 public class IndexModel : PageModel
 {
     private readonly AppDbContext _db;
-    public IndexModel(AppDbContext db) => _db = db;
+    private readonly ImageStorage _images;
+
+    public IndexModel(AppDbContext db, ImageStorage images)
+    {
+        _db = db;
+        _images = images;
+    }
 
     public List<(Category Category, int Depth)> Rows { get; private set; } = new();
 
@@ -37,6 +44,7 @@ public class IndexModel : PageModel
         var category = await _db.Categories
             .Include(c => c.Children)
             .Include(c => c.Projects)
+            .Include(c => c.Images)
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (category is null) return RedirectToPage();
@@ -51,8 +59,18 @@ public class IndexModel : PageModel
         }
         else
         {
+            // Diskten silinecek dosyaları veritabanı kaydı silinmeden önce not al
+            var filesToDelete = new List<string?> { category.CoverImagePath };
+            filesToDelete.AddRange(category.Images.Select(i => i.ImagePath));
+
             _db.Categories.Remove(category);
             await _db.SaveChangesAsync();
+
+            foreach (var path in filesToDelete)
+            {
+                _images.Delete(path);
+            }
+
             TempData["Flash"] = $"\"{category.Name}\" silindi.";
         }
 

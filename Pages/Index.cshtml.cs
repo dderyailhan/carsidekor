@@ -17,7 +17,7 @@ public class IndexModel : PageModel
     // Slider'daki bir slayt
     public record HeroSlide(string Image, string Title, string Subtitle, string LinkUrl, string LinkText);
 
-    // Kategori kutucuğu: ad, adres, proje sayısı ve en yeni projenin görseli
+    // Kategori kutucuğu: ad, adres, proje sayısı ve gösterilecek görsel
     public class CategoryTile
     {
         public string Name { get; set; } = string.Empty;
@@ -33,7 +33,7 @@ public class IndexModel : PageModel
         new("https://placehold.co/1920x900/2a2a31/d4d4da?text=Fotograf+1",
             "Ürününüz vitrinde parlasın",
             "Kuyumcular için ölçüye özel vitrin tasarımı ve marangozluk.",
-            "/Projects", "Projelerimizi inceleyin"),
+            "/Projects", "Kategorilerimizi inceleyin"),
         new("https://placehold.co/1920x900/25252b/d4d4da?text=Fotograf+2",
             "Yüzüklükten kolye büstüne",
             "Takınızı en iyi gösteren standlar, mankenler ve tablolar.",
@@ -49,22 +49,62 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
-        // Sayımı ve son proje görselini veritabanı hesaplıyor, uygulamaya sadece sonuç geliyor.
-        Categories = await _db.Categories
+        var allCategories = await _db.Categories
             .AsNoTracking()
-            .OrderBy(c => c.DisplayOrder)
-            .Select(c => new CategoryTile
-            {
-                Name = c.Name,
-                Slug = c.Slug,
-                ProjectCount = c.Projects.Count(p => p.IsPublished),
-                Cover = c.Projects
-                    .Where(p => p.IsPublished)
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Select(p => p.CoverImagePath)
-                    .FirstOrDefault()
-            })
+            .Select(c => new { c.Id, c.ParentCategoryId, c.Name, c.Slug, c.DisplayOrder, c.CoverImagePath })
             .ToListAsync();
+
+        var publishedProjects = await _db.Projects
+            .AsNoTracking()
+            .Where(p => p.IsPublished)
+            .Select(p => new { p.CategoryId, p.CoverImagePath, p.CreatedAt })
+            .ToListAsync();
+
+        var byParent = allCategories.Where(c => c.ParentCategoryId != null)
+            .GroupBy(c => c.ParentCategoryId!.Value)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Bir kategorinin kendisi + tüm alt/alt-alt kategorilerinin id'lerini toplar
+        HashSet<int> DescendantIds(int rootId)
+        {
+            var result = new HashSet<int> { rootId };
+            void Walk(int id)
+            {
+                if (!byParent.TryGetValue(id, out var kids)) return;
+                foreach (var k in kids)
+                {
+                    if (result.Add(k.Id)) Walk(k.Id);
+                }
+            }
+            Walk(rootId);
+            return result;
+        }
+
+        // Ana sayfada sadece en üst düzey kategoriler kart olarak gösterilir
+        // (Vitrinler, Bankolar, Nişler, Diğerleri gibi) — alt tipler tek tek listelenmez.
+        Categories = allCategories
+            .Where(c => c.ParentCategoryId == null)
+            .OrderBy(c => c.DisplayOrder)
+            .Select(top =>
+            {
+                var ids = DescendantIds(top.Id);
+                var projectsInBranch = publishedProjects.Where(p => ids.Contains(p.CategoryId)).ToList();
+
+                return new CategoryTile
+                {
+                    Name = top.Name,
+                    Slug = top.Slug,
+                    ProjectCount = projectsInBranch.Count,
+                    // Önce admin panelde bu kategori için yüklenen kapak fotoğrafı kullanılır;
+                    // yoksa altındaki en yeni projenin kapağı yedek olarak gösterilir.
+                    Cover = top.CoverImagePath ?? projectsInBranch
+                        .Where(p => !string.IsNullOrEmpty(p.CoverImagePath))
+                        .OrderByDescending(p => p.CreatedAt)
+                        .Select(p => p.CoverImagePath)
+                        .FirstOrDefault()
+                };
+            })
+            .ToList();
 
         // Önce "öne çıkan" işaretliler, eksik kalırsa en yeniler
         Featured = await _db.Projects

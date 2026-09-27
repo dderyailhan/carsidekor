@@ -10,8 +10,8 @@
     <a class="btn btn-outline-dark" asp-page="/Admin/Categories/Index">Listeye dön</a>
 </div>
 
-<div class="panel" style="max-width:520px">
-    <form method="post" novalidate>
+<div class="panel" style="max-width:640px">
+    <form method="post" enctype="multipart/form-data" novalidate>
         <div class="mb-3">
             <label asp-for="Input.Name" class="form-label">Kategori adı</label>
             <input asp-for="Input.Name" class="form-control" />
@@ -31,6 +31,52 @@
             <label asp-for="Input.DisplayOrder" class="form-label">Sıra</label>
             <input asp-for="Input.DisplayOrder" class="form-control" style="max-width:120px" />
         </div>
+
+        <hr class="mb-4" />
+
+        <div class="mb-4">
+            <label class="form-label">Kapak fotoğrafı</label>
+            <div class="hint mb-2">Kategori kartlarında ve listede görünen ana görsel.</div>
+
+            @if (!string.IsNullOrEmpty(Model.CurrentCover))
+            {
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <img src="@Model.CurrentCover" alt="Kapak" style="width:110px;height:80px;object-fit:cover;border-radius:6px" />
+                    <label class="form-check-label">
+                        <input type="checkbox" asp-for="RemoveCover" class="form-check-input" />
+                        Kapak fotoğrafını kaldır
+                    </label>
+                </div>
+            }
+
+            <input asp-for="CoverFile" type="file" accept="image/*" class="form-control" />
+            <span asp-validation-for="CoverFile" class="field-error"></span>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Galeri fotoğrafları</label>
+            <div class="hint mb-2">İstediğin kadar ek fotoğraf ekleyebilirsin (aynı anda birden fazla dosya seçebilirsin).</div>
+
+            @if (Model.ExistingImages.Any())
+            {
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                    @foreach (var img in Model.ExistingImages)
+                    {
+                        <label class="d-flex flex-column align-items-center gap-1" style="font-size:.8rem">
+                            <img src="@img.ImagePath" alt="" style="width:90px;height:70px;object-fit:cover;border-radius:6px" />
+                            <span class="d-flex align-items-center gap-1">
+                                <input type="checkbox" name="RemoveImageIds" value="@img.Id" class="form-check-input" />
+                                Kaldır
+                            </span>
+                        </label>
+                    }
+                </div>
+            }
+
+            <input asp-for="ExtraFiles" type="file" accept="image/*" multiple class="form-control" />
+            <span asp-validation-for="ExtraFiles" class="field-error"></span>
+        </div>
+
         <button type="submit" class="btn btn-ruby">Kaydet</button>
         <a class="btn btn-outline-dark" asp-page="/Admin/Categories/Index">Vazgeç</a>
     </form>

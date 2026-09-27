@@ -8,6 +8,7 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<CategoryImage> CategoryImages => Set<CategoryImage>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectImage> ProjectImages => Set<ProjectImage>();
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
@@ -26,6 +27,13 @@ public class AppDbContext : DbContext
             .WithMany(c => c.Children)
             .HasForeignKey(c => c.ParentCategoryId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Kategori galeri fotoğrafları: kategori silinince onlar da silinsin
+        b.Entity<CategoryImage>()
+            .HasOne(ci => ci.Category)
+            .WithMany(c => c.Images)
+            .HasForeignKey(ci => ci.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Aynı kullanıcı adıyla iki yönetici olamaz
         b.Entity<AdminUser>().HasIndex(u => u.Username).IsUnique();
