@@ -1,0 +1,48 @@
+@model CarsiDekor.Web.Pages.Projects.IndexModel.CategoryNode
+@{
+    var level = ViewData["Level"] is int l ? l : 0;
+    var wrapClass = level == 0 ? "cat-item cat-top" : "cat-item cat-sub";
+}
+
+<div class="@wrapClass">
+    <button type="button" class="cat-item-head" data-toggle>
+        <span class="cat-item-name">@Model.Name</span>
+        <span class="cat-item-count">
+            @(Model.IsLeaf ? $"{Model.Projects.Count} proje" : $"{Model.Children.Count} tip")
+        </span>
+        <span class="chev"></span>
+    </button>
+    <div class="cat-item-body">
+        <div class="cat-item-body-inner">
+            @if (Model.IsLeaf)
+            {
+                <partial name="_CategoryGallery" model="Model.Projects" />
+            }
+            else if (level == 0)
+            {
+                foreach (var child in Model.Children)
+                {
+                    var vd = new ViewDataDictionary(ViewData) { ["Level"] = 1 };
+                    <partial name="_CategoryNode" model="child" view-data="vd" />
+                }
+            }
+            else
+            {
+                <div class="chips">
+                    @for (var i = 0; i < Model.Children.Count; i++)
+                    {
+                        var child = Model.Children[i];
+                        <button type="button" class="chip @(i == 0 ? "active" : "")" data-chip data-target="chip-@Model.Id-@child.Id">@child.Name</button>
+                    }
+                </div>
+                @for (var i = 0; i < Model.Children.Count; i++)
+                {
+                    var child = Model.Children[i];
+                    <div class="subgallery @(i == 0 ? "show" : "")" id="chip-@Model.Id-@child.Id">
+                        <partial name="_CategoryGallery" model="child.Projects" />
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

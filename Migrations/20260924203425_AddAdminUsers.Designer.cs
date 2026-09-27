@@ -4,6 +4,7 @@ using CarsiDekor.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarsiDekor.Web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260924203425_AddAdminUsers")]
+    partial class AddAdminUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,16 +70,11 @@ namespace CarsiDekor.Web.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("ParentCategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ParentCategoryId");
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -184,16 +182,6 @@ namespace CarsiDekor.Web.Migrations
                     b.ToTable("ProjectImages");
                 });
 
-            modelBuilder.Entity("CarsiDekor.Web.Models.Category", b =>
-                {
-                    b.HasOne("CarsiDekor.Web.Models.Category", "ParentCategory")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ParentCategory");
-                });
-
             modelBuilder.Entity("CarsiDekor.Web.Models.Project", b =>
                 {
                     b.HasOne("CarsiDekor.Web.Models.Category", "Category")
@@ -218,8 +206,6 @@ namespace CarsiDekor.Web.Migrations
 
             modelBuilder.Entity("CarsiDekor.Web.Models.Category", b =>
                 {
-                    b.Navigation("Children");
-
                     b.Navigation("Projects");
                 });
 

@@ -1,0 +1,41 @@
+@page "{id:int?}"
+@model CarsiDekor.Web.Pages.Admin.Categories.EditModel
+@{
+    var isNew = ViewContext.RouteData.Values["id"] is null;
+    ViewData["Title"] = isNew ? "Yeni kategori" : "Kategoriyi düzenle";
+}
+
+<div class="page-bar">
+    <h1>@ViewData["Title"]</h1>
+    <a class="btn btn-outline-dark" asp-page="/Admin/Categories/Index">Listeye dön</a>
+</div>
+
+<div class="panel" style="max-width:520px">
+    <form method="post" novalidate>
+        <div class="mb-3">
+            <label asp-for="Input.Name" class="form-label">Kategori adı</label>
+            <input asp-for="Input.Name" class="form-control" />
+            <span asp-validation-for="Input.Name" class="field-error"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.Slug" class="form-label">Slug</label>
+            <input asp-for="Input.Slug" class="form-control" placeholder="örn: mankenler" />
+            <span asp-validation-for="Input.Slug" class="field-error"></span>
+            <div class="hint mt-1">Küçük harf, boşluksuz, tireli (ör. sari-ayakli-metal).</div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.ParentCategoryId" class="form-label">Üst kategori</label>
+            <select asp-for="Input.ParentCategoryId" asp-items="Model.ParentOptions" class="form-select"></select>
+        </div>
+        <div class="mb-4">
+            <label asp-for="Input.DisplayOrder" class="form-label">Sıra</label>
+            <input asp-for="Input.DisplayOrder" class="form-control" style="max-width:120px" />
+        </div>
+        <button type="submit" class="btn btn-ruby">Kaydet</button>
+        <a class="btn btn-outline-dark" asp-page="/Admin/Categories/Index">Vazgeç</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

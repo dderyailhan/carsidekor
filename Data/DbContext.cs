@@ -20,6 +20,13 @@ public class AppDbContext : DbContext
         b.Entity<Project>().Property(p => p.Title).HasMaxLength(200);
         b.Entity<ContactMessage>().Property(m => m.FullName).HasMaxLength(100);
 
+        // Kategori kendi kendine referans verebilir (üst/alt kategori)
+        b.Entity<Category>()
+            .HasOne(c => c.ParentCategory)
+            .WithMany(c => c.Children)
+            .HasForeignKey(c => c.ParentCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Aynı kullanıcı adıyla iki yönetici olamaz
         b.Entity<AdminUser>().HasIndex(u => u.Username).IsUnique();
         b.Entity<AdminUser>().Property(u => u.Username).HasMaxLength(50);

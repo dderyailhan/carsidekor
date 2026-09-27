@@ -196,17 +196,28 @@ public class EditModel : PageModel
         ExistingImages = project.Images.OrderBy(i => i.DisplayOrder).ToList();
     }
 
+    // Kategori ağacını girintili biçimde tek listede gösterir, ör: "Diğerleri — Mankenler — — Forza"
     private async Task LoadCategoriesAsync()
     {
-        var categories = await _db.Categories
-            .AsNoTracking()
-            .OrderBy(c => c.DisplayOrder)
-            .Select(c => new { c.Id, c.Name })
-            .ToListAsync();
+        var all = await _db.Categories.AsNoTracking().OrderBy(c => c.DisplayOrder).ToListAsync();
 
-        CategoryOptions = categories
-            .Select(c => new SelectListItem(c.Name, c.Id.ToString()))
-            .ToList();
+        var byParent = all.Where(c => c.ParentCategoryId != null)
+            .GroupBy(c => c.ParentCategoryId!.Value)
+            .ToDictionary(g => g.Key, g => g.OrderBy(c => c.DisplayOrder).ToList());
+
+        var options = new List<SelectListItem>();
+
+        void Walk(Category c, string prefix)
+        {
+            options.Add(new SelectListItem($"{prefix}{c.Name}", c.Id.ToString()));
+            if (byParent.TryGetValue(c.Id, out var kids))
+                foreach (var k in kids) Walk(k, prefix + "— ");
+        }
+
+        foreach (var top in all.Where(c => c.ParentCategoryId == null).OrderBy(c => c.DisplayOrder))
+            Walk(top, "");
+
+        CategoryOptions = options;
     }
 
     private static string? Clean(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();

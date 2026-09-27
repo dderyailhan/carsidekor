@@ -2,7 +2,7 @@
 @model CarsiDekor.Web.Pages.Projects.IndexModel
 @{
     ViewData["Title"] = "Projelerimiz";
-    ViewData["Description"] = "Çarşı Dekor'un yüzüklük, kolye büstü, manken, tablo ve komple vitrin projeleri.";
+    ViewData["Description"] = "Çarşı Dekor'un vitrin, banko, niş, manken ve diğer sergileme projeleri.";
 }
 
 <section class="page-hero">
@@ -13,33 +13,81 @@
 </section>
 
 <section class="section section-tight">
-    <div class="container">
-        <div class="filter-bar">
-            <a class="filter-pill @(Model.Secili == null ? "active" : "")"
-               asp-page="/Projects/Index">Tümü</a>
-
-            @foreach (var c in Model.Categories)
-            {
-                <a class="filter-pill @(Model.Secili == c.Slug ? "active" : "")"
-                   asp-page="/Projects/Index" asp-route-kategori="@c.Slug">@c.Name</a>
-            }
-        </div>
-
-        @if (Model.Projects.Any())
+    <div class="container cat-tree">
+        @if (Model.Tree.Any())
         {
-            <div class="project-grid">
-                @foreach (var p in Model.Projects)
-                {
-                    <partial name="_ProjectCard" model="p" />
-                }
-            </div>
+            @foreach (var top in Model.Tree)
+            {
+                var vd = new ViewDataDictionary(ViewData) { ["Level"] = 0 };
+                <partial name="_CategoryNode" model="top" view-data="vd" />
+            }
         }
         else
         {
             <div class="empty-state">
-                <p>Bu kategoride henüz proje yok.</p>
-                <a class="btn-ink" asp-page="/Projects/Index">Tüm projeleri gör</a>
+                <p>Henüz kategori eklenmedi.</p>
             </div>
         }
     </div>
 </section>
+
+@section Scripts {
+<script>
+document.querySelectorAll('.cat-tree').forEach(function (tree) {
+    tree.addEventListener('click', function (e) {
+        var toggleBtn = e.target.closest('[data-toggle]');
+        if (toggleBtn) {
+            toggleBtn.closest('.cat-item').classList.toggle('open');
+            return;
+        }
+        var chip = e.target.closest('[data-chip]');
+        if (chip) {
+            var group = chip.closest('.cat-item-body-inner');
+            group.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
+            chip.classList.add('active');
+            group.querySelectorAll('.subgallery').forEach(function (g) { g.classList.remove('show'); });
+            var target = document.getElementById(chip.dataset.target);
+            if (target) target.classList.add('show');
+        }
+    });
+});
+</script>
+}
+
+<style>
+    .cat-tree{max-width:820px;margin:0 auto}
+    .cat-item{border:1px solid #33333c;border-radius:8px;margin-bottom:.9rem;overflow:hidden;background:#1e1e24;
+              transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease}
+    .cat-item:hover, .cat-item.open{border-color:#c1263c;transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(193,38,60,.55)}
+    .cat-item.cat-sub{background:#25252c;margin:.6rem 0 0}
+    .cat-item.cat-sub:hover, .cat-item.cat-sub.open{transform:translateX(2px)}
+    .cat-item-head{all:unset;display:flex;align-items:center;justify-content:space-between;width:100%;padding:1.1rem 1.4rem;cursor:pointer;color:#d4d4da;font-family:'Marcellus',serif}
+    .cat-item.cat-sub .cat-item-head{padding:.8rem 1rem;font-family:inherit;font-size:.98rem}
+    .cat-item-head:focus-visible{outline:2px solid #e0354c;outline-offset:-2px}
+    .cat-item:hover .cat-item-name{color:#e0354c}
+    .cat-item-name{transition:color .18s ease;font-size:1.3rem}
+    .cat-item.cat-sub .cat-item-name{font-size:1rem}
+    .cat-item-count{color:#9a9aa4;font-size:.85rem;margin-left:.6rem;margin-right:auto;padding-left:.6rem}
+    .chev{width:11px;height:11px;border-right:2px solid #9a9aa4;border-bottom:2px solid #9a9aa4;transform:rotate(45deg);transition:transform .2s ease;flex-shrink:0}
+    .cat-item.open > .cat-item-head .chev{transform:rotate(-135deg)}
+    .cat-item-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
+    .cat-item.open > .cat-item-body{max-height:3000px}
+    .cat-item-body-inner{padding:0 1.4rem 1.4rem}
+    .cat-item.cat-sub .cat-item-body-inner{padding:0 1rem 1rem}
+
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+    .grid .ph-link{position:relative;aspect-ratio:4/3;border-radius:5px;overflow:hidden;display:block;background:#151519}
+    .grid .ph-link img{width:100%;height:100%;object-fit:cover;display:block}
+    .grid .ph-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#55555f;font-size:.7rem;border:1px dashed #3a3a44;border-radius:5px}
+    .grid .ph-title{position:absolute;left:0;right:0;bottom:0;padding:.3rem .5rem;font-size:.72rem;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent);color:#fff;opacity:0;transition:opacity .15s ease}
+    .grid .ph-link:hover .ph-title{opacity:1}
+    .empty-hint{color:#9a9aa4;font-size:.9rem}
+
+    .chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+    .chip{border:1px solid #33333c;border-radius:20px;padding:.4rem .9rem;font-size:.85rem;cursor:pointer;background:#1e1e24;color:#d4d4da;
+          transition:border-color .15s ease, color .15s ease}
+    .chip:hover{border-color:#e0354c;color:#e0354c}
+    .chip.active, .chip.active:hover{background:#c1263c;border-color:#c1263c;color:#fff}
+    .subgallery{display:none}
+    .subgallery.show{display:block}
+</style>

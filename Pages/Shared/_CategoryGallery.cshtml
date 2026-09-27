@@ -1,0 +1,25 @@
+@model List<CarsiDekor.Web.Models.Project>
+
+@if (Model.Any())
+{
+    <div class="grid">
+        @foreach (var p in Model)
+        {
+            <a class="ph-link" asp-page="/Projects/Details" asp-route-id="@p.Id">
+                @if (!string.IsNullOrEmpty(p.CoverImagePath))
+                {
+                    <img src="@p.CoverImagePath" alt="@p.Title" loading="lazy" />
+                }
+                else
+                {
+                    <span class="ph-empty">Fotoğraf yok</span>
+                }
+                <span class="ph-title">@p.Title</span>
+            </a>
+        }
+    </div>
+}
+else
+{
+    <p class="empty-hint">Bu kategoride henüz proje yok.</p>
+}
