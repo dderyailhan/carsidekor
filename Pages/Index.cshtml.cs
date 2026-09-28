@@ -60,6 +60,13 @@ public class IndexModel : PageModel
             .Select(p => new { p.CategoryId, p.CoverImagePath, p.CreatedAt })
             .ToListAsync();
 
+        // Kategoriye doğrudan eklenen ek fotoğraflar: ne kapak ne de proje fotoğrafı
+        // varsa anasayfa kutucuğu için son yedek kaynak olarak kullanılır.
+        var categoryImages = await _db.CategoryImages
+            .AsNoTracking()
+            .Select(i => new { i.CategoryId, i.ImagePath, i.DisplayOrder })
+            .ToListAsync();
+
         var byParent = allCategories.Where(c => c.ParentCategoryId != null)
             .GroupBy(c => c.ParentCategoryId!.Value)
             .ToDictionary(g => g.Key, g => g.ToList());
@@ -89,19 +96,25 @@ public class IndexModel : PageModel
             {
                 var ids = DescendantIds(top.Id);
                 var projectsInBranch = publishedProjects.Where(p => ids.Contains(p.CategoryId)).ToList();
+                var imagesInBranch = categoryImages.Where(i => ids.Contains(i.CategoryId)).ToList();
 
                 return new CategoryTile
                 {
                     Name = top.Name,
                     Slug = top.Slug,
                     ProjectCount = projectsInBranch.Count,
-                    // Önce admin panelde bu kategori için yüklenen kapak fotoğrafı kullanılır;
-                    // yoksa altındaki en yeni projenin kapağı yedek olarak gösterilir.
-                    Cover = top.CoverImagePath ?? projectsInBranch
-                        .Where(p => !string.IsNullOrEmpty(p.CoverImagePath))
-                        .OrderByDescending(p => p.CreatedAt)
-                        .Select(p => p.CoverImagePath)
-                        .FirstOrDefault()
+                    // Sırasıyla: 1) bu kategori için yüklenen kapak fotoğrafı,
+                    // 2) altındaki en yeni projenin kapağı, 3) kategoriye eklenen ek fotoğraflardan biri.
+                    Cover = top.CoverImagePath
+                        ?? projectsInBranch
+                            .Where(p => !string.IsNullOrEmpty(p.CoverImagePath))
+                            .OrderByDescending(p => p.CreatedAt)
+                            .Select(p => p.CoverImagePath)
+                            .FirstOrDefault()
+                        ?? imagesInBranch
+                            .OrderBy(i => i.DisplayOrder)
+                            .Select(i => i.ImagePath)
+                            .FirstOrDefault()
                 };
             })
             .ToList();

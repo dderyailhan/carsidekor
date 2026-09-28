@@ -3,6 +3,7 @@ using CarsiDekor.Web.Data;
 using CarsiDekor.Web.Models;
 using CarsiDekor.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -44,9 +45,9 @@ public class EditModel : PageModel
 
     [BindProperty] public InputModel Input { get; set; } = new();
     [BindProperty] public IFormFile? CoverFile { get; set; }
-    [BindProperty] public List<IFormFile> ExtraFiles { get; set; } = new();
+    [BindProperty, ValidateNever] public List<IFormFile> ExtraFiles { get; set; } = new();
     [BindProperty] public bool RemoveCover { get; set; }
-    [BindProperty] public List<int> RemoveImageIds { get; set; } = new();
+    [BindProperty, ValidateNever] public List<int> RemoveImageIds { get; set; } = new();
 
     public int? ProjectId { get; private set; }
     public string? CurrentCover { get; private set; }

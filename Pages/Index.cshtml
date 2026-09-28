@@ -47,14 +47,14 @@
 
 <section class="section">
     <div class="container">
-        <div class="section-head">
+        <div class="section-head section-head-center">
             <div>
-                <h2>Vitrinin her köşesi için</h2>
-                <p>Yüzükten kolyeye, küçük standdan komple mağaza vitrinine kadar ihtiyacınız olan işi seçin.</p>
+                <h2>Vitrininizin Her Köşesi İçin</h2>
+                <p>Yüzükten kolyeye, küçük stanttan komple mağaza vitrinine kadar ihtiyacınıza uygun kategoriyi seçin.</p>
             </div>
         </div>
 
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 cat-tile-row justify-content-center">
             @foreach (var c in Model.Categories)
             {
                 <div class="col">
@@ -81,7 +81,7 @@
                 <h2>Öne çıkan işler</h2>
                 <p>Atölyemizden çıkan son çalışmalardan bir seçki.</p>
             </div>
-            <a class="text-link" asp-page="/Projects/Index">Tüm projeleri gör</a>
+            <a class="text-link" asp-page="/Projects/Index">Tüm kategorileri gör</a>
         </div>
 
         @if (Model.Featured.Any())

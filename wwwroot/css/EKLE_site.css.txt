@@ -1,0 +1,120 @@
+
+/* ========== Kategoriler: alt kategori kartları + yol çubuğu (site.css'in EN SONUNA ekle) ========== */
+
+/* Sol menüdeki alt grup sadece açık üst kategoride görünsün */
+.proj-cat.is-open .proj-subcats { display: none; }
+.proj-cat.is-open > .proj-subcats { display: block; }
+
+/* Yol çubuğu: Diğerleri / Mankenler / ... */
+.proj-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: .7rem;
+    font-size: .85rem;
+    color: var(--muted);
+}
+.proj-crumbs button {
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background: none;
+    font: inherit;
+    color: var(--muted);
+    cursor: pointer;
+}
+.proj-crumbs button:hover { color: var(--text); border-bottom-color: var(--ruby); }
+.proj-crumbs .now { color: var(--text); }
+
+/* Alt kategori kartları */
+.proj-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+.proj-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--graphite-2);
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: transform .4s cubic-bezier(.22, .8, .28, 1), box-shadow .4s ease;
+}
+.proj-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 32px -14px rgba(10, 10, 14, .55);
+}
+.proj-card img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .85;
+    transition: transform .6s, opacity .3s;
+}
+.proj-card:hover img { transform: scale(1.07); opacity: 1; }
+.proj-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(10, 10, 12, .88), transparent 58%);
+}
+.proj-card-body {
+    position: absolute;
+    left: 1.05rem;
+    right: 1.05rem;
+    bottom: 1.1rem;
+    z-index: 1;
+}
+.proj-card-name {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    line-height: 1.2;
+}
+.proj-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: .2rem;
+    font-size: .85rem;
+    color: var(--silver);
+}
+.proj-card-arrow {
+    color: var(--ruby);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity .3s, transform .3s;
+}
+.proj-card:hover .proj-card-arrow { opacity: 1; transform: none; }
+.proj-card-bar {
+    position: absolute;
+    left: 1.05rem;
+    bottom: .6rem;
+    z-index: 1;
+    width: 0;
+    height: 2px;
+    background: var(--ruby);
+    transition: width .35s;
+}
+.proj-card:hover .proj-card-bar { width: calc(100% - 2.1rem); }
+
+/* Mobil: menü dikey liste, kartlar 2 sütun */
+@media (max-width: 820.98px) {
+    .proj-sidebar { display: block; overflow: visible; }
+    .proj-cat { flex: none; }
+    .proj-cat-btn { border-bottom: 0; border-left: 3px solid transparent; white-space: normal; }
+    .proj-cat-btn.is-active { border-left-color: var(--ruby); border-bottom-color: transparent; }
+    .proj-cat.is-open > .proj-subcats { display: block !important; }
+    .proj-cards { grid-template-columns: repeat(2, 1fr); gap: .9rem; }
+}

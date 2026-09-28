@@ -34,7 +34,10 @@ builder.Services.AddRazorPages(options =>
     // /Admin altındaki tüm sayfalar giriş ister, sadece giriş sayfası herkese açık
     options.Conventions.AuthorizeFolder("/Admin");
     options.Conventions.AllowAnonymousToPage("/Admin/Login");
-});
+})
+// '?' işareti olmayan alanları (ör. List<IFormFile> ExtraFiles) otomatik "zorunlu" sayma.
+// Zorunlu olması gereken alanlar zaten [Required] ile açıkça işaretli.
+.AddMvcOptions(o => o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
 var app = builder.Build();
 

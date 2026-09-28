@@ -1,25 +1,61 @@
-@model List<CarsiDekor.Web.Models.Project>
+@model CarsiDekor.Web.Pages.Projects.IndexModel.CategoryNode
 
-@if (Model.Any())
+@{
+    var hasCover = !string.IsNullOrEmpty(Model.CoverImagePath);
+    var hasAnything = hasCover || Model.Projects.Any() || Model.Images.Any();
+    // Aynı kategorideki tüm fotoğraflar tek bir lightbox grubunda toplanır;
+    // ok tuşlarıyla/butonla aralarında gezinilir.
+    var groupKey = "cat-" + Model.Id;
+}
+
+@if (hasAnything)
 {
-    <div class="grid">
-        @foreach (var p in Model)
+    <div class="masonry">
+        @if (hasCover)
         {
-            <a class="ph-link" asp-page="/Projects/Details" asp-route-id="@p.Id">
-                @if (!string.IsNullOrEmpty(p.CoverImagePath))
-                {
+            <button type="button" class="ph-card"
+                    data-lightbox="@Model.CoverImagePath"
+                    data-lightbox-group="@groupKey"
+                    data-lightbox-alt="@Model.Name"
+                    data-lightbox-title="@Model.Name">
+                <img src="@Model.CoverImagePath" alt="@Model.Name" loading="lazy" />
+            </button>
+        }
+        @foreach (var p in Model.Projects)
+        {
+            if (!string.IsNullOrEmpty(p.CoverImagePath))
+            {
+                <button type="button" class="ph-card"
+                        data-lightbox="@p.CoverImagePath"
+                        data-lightbox-group="@groupKey"
+                        data-lightbox-alt="@p.Title"
+                        data-lightbox-title="@p.Title"
+                        data-lightbox-link="@Url.Page("/Projects/Details", new { id = p.Id })">
                     <img src="@p.CoverImagePath" alt="@p.Title" loading="lazy" />
-                }
-                else
-                {
+                    <span class="ph-card-cap">@p.Title</span>
+                </button>
+            }
+            else
+            {
+                <a class="ph-card ph-card-empty" asp-page="/Projects/Details" asp-route-id="@p.Id">
                     <span class="ph-empty">Fotoğraf yok</span>
-                }
-                <span class="ph-title">@p.Title</span>
-            </a>
+                    <span class="ph-card-cap">@p.Title</span>
+                </a>
+            }
+        }
+        @foreach (var img in Model.Images)
+        {
+            <button type="button" class="ph-card"
+                    data-lightbox="@img.ImagePath"
+                    data-lightbox-group="@groupKey"
+                    data-lightbox-alt="@Model.Name"
+                    data-lightbox-title="@Model.Name">
+                <img src="@img.ImagePath" alt="@Model.Name" loading="lazy" />
+            </button>
         }
     </div>
 }
-else
+else if (Model.IsLeaf)
 {
-    <p class="empty-hint">Bu kategoride henüz proje yok.</p>
+    <p class="empty-hint">Bu kategoride henüz fotoğraf eklenmedi.</p>
 }

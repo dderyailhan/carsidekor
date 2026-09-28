@@ -1,0 +1,32 @@
+@model CarsiDekor.Web.Pages.Projects.IndexModel.CategoryNode
+@{
+    // Sol menü: sadece 2 seviye (ana kategori + onun doğrudan alt kategorileri).
+    // Daha derindeki kategoriler menüde görünmez, sağdaki kartlardan açılır.
+    var firstId = ViewData["FirstId"] is int f ? f : 0;
+    var showKids = !Model.IsLeaf && Model.Depth == 0;
+}
+
+<div class="proj-cat @(Model.Contains(firstId) ? "is-open" : "")">
+    <button type="button" class="proj-cat-btn @(Model.Id == firstId ? "is-active" : "")"
+            data-target="panel-@Model.Id">
+        <span>@Model.Name</span>
+        @if (Model.IsLeaf)
+        {
+            <span class="count">@Model.PhotoCount</span>
+        }
+        else
+        {
+            <span class="count">@Model.Children.Count tip</span>
+        }
+    </button>
+
+    @if (showKids)
+    {
+        <div class="proj-subcats">
+            @foreach (var child in Model.Children)
+            {
+                <partial name="_CategoryNav" model="child" view-data="ViewData" />
+            }
+        </div>
+    }
+</div>

@@ -8,7 +8,7 @@
     <button type="button" class="cat-item-head" data-toggle>
         <span class="cat-item-name">@Model.Name</span>
         <span class="cat-item-count">
-            @(Model.IsLeaf ? $"{Model.Projects.Count} proje" : $"{Model.Children.Count} tip")
+            @(Model.IsLeaf ? $"{Model.Projects.Count + Model.Images.Count} fotoğraf" : $"{Model.Children.Count} tip")
         </span>
         <span class="chev"></span>
     </button>
@@ -16,7 +16,7 @@
         <div class="cat-item-body-inner">
             @if (Model.IsLeaf)
             {
-                <partial name="_CategoryGallery" model="Model.Projects" />
+                <partial name="_CategoryGallery" model="Model" />
             }
             else if (level == 0)
             {
@@ -39,7 +39,7 @@
                 {
                     var child = Model.Children[i];
                     <div class="subgallery @(i == 0 ? "show" : "")" id="chip-@Model.Id-@child.Id">
-                        <partial name="_CategoryGallery" model="child.Projects" />
+                        <partial name="_CategoryGallery" model="child" />
                     </div>
                 }
             }
